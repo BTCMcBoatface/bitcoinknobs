@@ -209,6 +209,17 @@ struct PrecomputedTransactionData
     explicit PrecomputedTransactionData(const T& tx);
 };
 
+/**
+ * Compute the default template hash for OP_CHECKTEMPLATEVERIFY using some precomputed
+ * hash inputs.
+ *
+ * (This exported interface is only used in tests.)
+ */
+template<typename TxType>
+uint256 GetDefaultCheckTemplateVerifyHash(
+    const TxType& tx, const uint256& outputs_hash, const uint256& sequences_hash,
+    const uint32_t input_index);
+
 enum class SigVersion
 {
     BASE = 0,        //!< Bare scripts and BIP16 P2SH-wrapped redeemscripts
@@ -287,9 +298,9 @@ public:
          return false;
     }
 
-    virtual bool CheckDefaultCheckTemplateVerifyHash(const std::span<const unsigned char>& hash) const
+    virtual bool CheckDefaultCheckTemplateVerifyHash(const std::vector<unsigned char>& hash) const
     {
-         return false;
+        return false;
     }
 
     virtual ~BaseSignatureChecker() = default;
@@ -328,7 +339,7 @@ public:
     bool CheckSchnorrSignature(Span<const unsigned char> sig, Span<const unsigned char> pubkey, SigVersion sigversion, ScriptExecutionData& execdata, ScriptError* serror = nullptr) const override;
     bool CheckLockTime(const CScriptNum& nLockTime) const override;
     bool CheckSequence(const CScriptNum& nSequence) const override;
-    bool CheckDefaultCheckTemplateVerifyHash(const std::span<const unsigned char>& hash) const override;
+    bool CheckDefaultCheckTemplateVerifyHash(const std::vector<unsigned char>& hash) const override;
 };
 
 using TransactionSignatureChecker = GenericTransactionSignatureChecker<CTransaction>;
